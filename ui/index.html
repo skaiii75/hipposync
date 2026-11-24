@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Retrouver les documents et rendus synchronisés depuis Hippocampus.">
+  <meta name="application-name" content="HippoSync">
+  <meta name="theme-color" content="#102648">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/hipposync.png">
+  <link rel="apple-touch-icon" href="/assets/hipposync.png">
+  <title>HippoSync</title>
+  <link rel="stylesheet" href="/assets/style.css">
+  <script type="module" src="/assets/app.js"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="/"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Hippo<span class="brand-accent">Sync</span></span></a>
+    <nav aria-label="Navigation principale">
+      <a href="/" id="nav-dashboard" aria-current="location"><span aria-hidden="true">◫</span> Tableau de bord</a>
+      <a href="/matieres" id="nav-courses"><span aria-hidden="true">▤</span> Mes matières</a>
+      <button class="settings-button" type="button" data-settings><span aria-hidden="true">⚙</span> Réglages</button>
+    </nav>
+  </aside>
+
+  <main id="apercu">
+    <header class="page-heading">
+      <div>
+        <a class="site-link back-courses" id="back-courses" href="/matieres" hidden>← Toutes les matières</a>
+        <a class="site-link" id="course-link" target="_blank" rel="noopener">Centrale Nantes <span aria-hidden="true">↗</span></a>
+        <h1 id="course-title">Tableau de bord</h1>
+      </div>
+      <div class="heading-actions">
+        <a class="button secondary" id="browse-courses" href="/matieres">Voir les matières →</a>
+        <select id="course-picker" aria-label="Choisir une matière"><option value="">Toutes les matières</option></select>
+        <button class="button secondary folder-button" type="button" id="open-root" disabled><span aria-hidden="true">↗</span> Ouvrir le dossier</button>
+      </div>
+    </header>
+
+    <dl class="overview-metrics" id="overview-metrics">
+      <div class="metric"><span class="indicator icon-books" aria-hidden="true">▤</span><dt>Matières</dt><dd id="course-count">—</dd></div>
+      <div class="metric"><span class="indicator icon-calendar" aria-hidden="true">◷</span><dt>Échéances à venir</dt><dd id="upcoming-count">—</dd></div>
+      <div class="metric metric-sync"><span class="indicator icon-cycle" aria-hidden="true">↻</span><dt>Dernière sync</dt><dd id="last-sync">—</dd></div>
+    </dl>
+
+    <div class="dashboard-grid" id="dashboard-grid">
+      <section class="panel agenda" id="agenda" aria-labelledby="agenda-title">
+        <header class="panel-header">
+          <h2 id="agenda-title">Échéances</h2>
+          <select id="deadline-filter" aria-label="Filtrer les échéances">
+            <option value="all">Toutes les échéances</option>
+            <option value="upcoming">À venir</option>
+            <option value="late">En retard</option>
+            <option value="submitted">Remis</option>
+          </select>
+        </header>
+        <div id="deadline-list"></div>
+        <div class="agenda-footer" id="deadline-footer" hidden>
+          <button class="link-button" id="deadline-more" type="button" aria-expanded="false">Voir toutes les échéances</button>
+        </div>
+      </section>
+      <section class="sync-card" aria-labelledby="sync-title">
+        <div class="sync-body">
+          <div class="sync-art" aria-hidden="true"><span>↻</span></div>
+          <div class="sync-title-line">
+            <h2 id="sync-title">Synchronisation</h2>
+            <span class="badge" id="sync-badge">Chargement</span>
+          </div>
+          <p id="sync-message" aria-live="polite">Lecture de l’état local…</p>
+          <dl class="sync-details">
+            <div><dt>Prochain passage</dt><dd id="next-sync">—</dd></div>
+            <div><dt>Fréquence</dt><dd id="sync-frequency">—</dd></div>
+          </dl>
+          <div class="sync-actions">
+            <button type="button" class="button primary" id="sync" disabled><span class="refresh-icon" aria-hidden="true">↻</span> Synchroniser maintenant</button>
+            <button type="button" class="button secondary" id="login" hidden>Se reconnecter</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel" id="dashboard-courses" aria-labelledby="dashboard-courses-title">
+      <header class="panel-header">
+        <h2 id="dashboard-courses-title">Mes matières <span class="group-count" id="dashboard-course-count"></span></h2>
+        <select id="card-sort" aria-label="Trier les cartes des matières">
+          <option value="modified">Dernière modification</option>
+          <option value="opened">Dernière ouverture</option>
+        </select>
+      </header>
+      <ul id="dashboard-course-grid" class="course-grid dashboard-card-grid"></ul>
+    </section>
+
+    <section class="panel" id="catalogue" aria-labelledby="catalogue-title" hidden>
+      <header class="panel-header">
+        <h2 id="catalogue-title">Liste des matières <span class="group-count" id="course-results"></span></h2>
+        <input id="course-filter" class="search" type="search" aria-label="Rechercher une matière" placeholder="Rechercher une matière">
+      </header>
+      <ul id="course-grid" class="course-grid"></ul>
+    </section>
+
+    <section class="panel content-browser" id="course-content" aria-labelledby="content-title" hidden>
+      <header class="panel-header content-heading">
+        <div><h2 id="content-title">Contenu de la matière</h2><p id="content-results" class="muted" aria-live="polite"></p></div>
+        <div class="content-search-controls">
+          <input id="filter" class="search" type="search" aria-label="Rechercher dans la matière" placeholder="Fichier, rendu, lien…">
+          <select id="sort" aria-label="Trier les fichiers">
+            <option value="section">Par rubrique</option>
+            <option value="recent">Fichiers récents</option>
+          </select>
+        </div>
+      </header>
+
+      <div class="content-filters" role="group" aria-label="Type de contenu">
+        <button type="button" data-content-filter="all" aria-pressed="true">Tout</button>
+        <button type="button" data-content-filter="files" aria-pressed="false">Fichiers de cours</button>
+        <button type="button" data-content-filter="assignments" aria-pressed="false">Rendus</button>
+        <button type="button" data-content-filter="links" aria-pressed="false">Liens et activités</button>
+      </div>
+
+      <p id="content-empty" class="empty" hidden></p>
+      <div class="panels" id="course-panels">
+        <section class="content-section documents" id="documents" aria-labelledby="documents-title">
+          <h3 class="content-section-title" id="documents-title">Fichiers de cours <span id="files-count" class="group-count"></span></h3>
+          <div id="sections" class="sections"></div>
+        </section>
+        <section class="content-section coursework" id="rendus" aria-labelledby="assignments-title">
+          <h3 class="content-section-title" id="assignments-title">Rendus <span id="assignments-count" class="group-count"></span></h3>
+          <div id="assignments" class="assignments"></div>
+        </section>
+        <section class="content-section" id="course-links" aria-labelledby="links-title">
+          <h3 class="content-section-title" id="links-title">Liens et activités <span id="links-count" class="group-count"></span></h3>
+          <div id="links" class="sections"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <div class="dialog-header">
+      <h2 id="settings-title">Réglages</h2>
+      <button type="button" id="close-settings" class="close-button" aria-label="Fermer">×</button>
+    </div>
+    <form id="settings-form">
+      <label for="destination">Dossier de base des matières</label>
+      <input id="destination" name="root" required>
+      <label for="interval">Synchronisation automatique</label>
+      <select id="interval" name="interval">
+        <option value="5">Toutes les 5 minutes</option>
+        <option value="10">Toutes les 10 minutes</option>
+        <option value="15">Toutes les 15 minutes</option>
+        <option value="20">Toutes les 20 minutes</option>
+        <option value="30">Toutes les 30 minutes</option>
+        <option value="45">Toutes les 45 minutes</option>
+        <option value="60">Toutes les heures</option>
+        <option value="120">Toutes les 2 heures</option>
+        <option value="240">Toutes les 4 heures</option>
+        <option value="360">Toutes les 6 heures</option>
+        <option value="720">Toutes les 12 heures</option>
+        <option value="1440">Une fois par jour</option>
+        <option value="0">Désactivée</option>
+      </select>
+      <p id="schedule-help" class="muted"></p>
+      <p id="settings-error" class="inline-error" role="alert" hidden></p>
+      <div class="dialog-actions">
+        <button type="submit" class="button primary">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+  <p id="notification" class="notification" role="status" hidden></p>
+</body>
+</html>

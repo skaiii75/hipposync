@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "playwright": "^1.63.0"
+  },
+  "name": "hipposync",
+  "private": true
+}
